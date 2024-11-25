@@ -1,0 +1,175 @@
+# [Initialization
+package omp 4
+units           metal
+boundary        s s p
+atom_style      atomic
+dimension	3
+neighbor 0.3 bin
+neigh_modify delay 5
+
+# [mobile definition
+
+region whole block 0 149.5 0 119.6 0 11.96 units box
+create_box 2 whole 
+
+
+# [Atom definition 
+read_data co_ti.lmp add append
+
+# Regions
+
+region leftupper block INF 47.84 59.8 113.62 INF INF units box
+group leftupper region leftupper
+region leftlower block INF 47.84 5.98 59.8 INF INF units box
+group leftlower region leftlower
+region lower block INF INF INF 5.98 INF INF units box
+group lower region lower
+region upper block INF INF 113.62 INF INF INF units box
+group upper region upper
+
+region notch block 0 17.99 55.315 64.285  INF INF units box
+delete_atoms region notch
+
+
+pair_style meam
+pair_coeff	* * library.meam Co Ti CoTi.meam Co Ti
+
+timestep  0.001
+dump dump_1 all custom 10 dump.300K.min id type x y z ix iy iz vx vy vz
+thermo_style  custom step time temp pe etotal press vol
+thermo 100
+
+variable t equal time
+run 100
+undump dump_1
+
+group boundary union upper lower
+group mobile subtract all boundary
+
+# Perform temperature calibration using Nose-Hoover thermostat
+velocity mobile create 300.0 4928459 rot yes dist gaussian
+fix 1 mobile nvt temp 300.0 300.0 0.1
+compute new mobile temp 
+fix 2 mobile ave/time 10 5 100 c_new file output/temp_450.dat
+thermo 100
+dump mydmp mobile atom 100 output/dump.300K.nvt.lammpstrj
+restart 500 nvt1.restart nvt2.restart
+
+# Equilibration run to reach the desired temperature
+run 10000
+
+
+# [Define CZM regions 1 to 10 (+-3a from the y axis midline)
+region 1 block 11.945047010000001 21.01670740866667 50.0825 68.02250000000001 0 11.96
+group 1 region 1
+
+region 2 block 21.01670740866667 30.088367807333334 50.0825 68.02250000000001 0 11.96
+group 2 region 2
+
+region 3 block 30.088367807333334 39.16002820600001 50.0825 68.02250000000001 0 11.96
+group 3 region 3
+
+region 4 block 39.16002820600001 48.23168860466667 50.0825 68.02250000000001 0 11.96
+group 4 region 4
+
+region 5 block 48.23168860466667 57.30334900333334 50.0825 68.02250000000001 0 11.96
+group 5 region 5
+
+region 6 block 57.30334900333334 66.375009402 50.0825 68.02250000000001 0 11.96
+group 6 region 6
+
+region 7 block 66.375009402 75.44666980066667 50.0825 68.02250000000001 0 11.96
+group 7 region 7
+
+region 8 block 75.44666980066667 84.51833019933333 50.0825 68.02250000000001 0 11.96
+group 8 region 8
+
+region 9 block 84.51833019933333 93.589990598 50.0825 68.02250000000001 0 11.96
+group 9 region 9
+
+region 10 block 93.589990598 102.66165099666667 50.0825 68.02250000000001 0 11.96
+group 10 region 10
+
+# [Measure change of positions for top and bottom atoms
+group measured_atoms id 2212 5713 2214 1719 2222 1725 2232 1727 2234 1737 2240 1739 2246 5751 2256 5753 2258 5759 2266 1765
+
+compute atom_position measured_atoms property/atom x y z id
+variable x atom c_atom_position[1]
+variable y atom c_atom_position[2]
+variable z atom c_atom_position[3]
+variable id atom c_atom_position[4]
+dump 3 measured_atoms custom 100 ./CZM/positions/positions.dat v_id v_x v_y v_z
+
+# [Dump the data for traction force
+variable volume equal 207434.04668044412
+variable ConvoFac equal 1/1.0e4
+
+compute stress_1 1 stress/atom NULL
+compute stress_1_y 1 reduce sum c_stress_1[2]
+variable sigmayy_1 equal c_stress_1_y*(v_ConvoFac/839.176928)
+fix stress_1 1 ave/time 1 100 100 v_sigmayy_1 file ./CZM/stresses/stress1.dat
+
+compute stress_2 2 stress/atom NULL
+compute stress_2_y 2 reduce sum c_stress_2[2]
+variable sigmayy_2 equal c_stress_2_y*(v_ConvoFac/1888.148088)
+fix stress_2 2 ave/time 1 100 100 v_sigmayy_2 file ./CZM/stresses/stress2.dat
+
+compute stress_3 3 stress/atom NULL
+compute stress_3_y 3 reduce sum c_stress_3[2]
+variable sigmayy_3 equal c_stress_3_y*(v_ConvoFac/2202.839436)
+fix stress_3 3 ave/time 1 100 100 v_sigmayy_3 file ./CZM/stresses/stress3.dat
+
+compute stress_4 4 stress/atom NULL
+compute stress_4_y 4 reduce sum c_stress_4[2]
+variable sigmayy_4 equal c_stress_4_y*(v_ConvoFac/1888.148088)
+fix stress_4 4 ave/time 1 100 100 v_sigmayy_4 file ./CZM/stresses/stress4.dat
+
+compute stress_5 5 stress/atom NULL
+compute stress_5_y 5 reduce sum c_stress_5[2]
+variable sigmayy_5 equal c_stress_5_y*(v_ConvoFac/1888.148088)
+fix stress_5 5 ave/time 1 100 100 v_sigmayy_5 file ./CZM/stresses/stress5.dat
+
+compute stress_6 6 stress/atom NULL
+compute stress_6_y 6 reduce sum c_stress_6[2]
+variable sigmayy_6 equal c_stress_6_y*(v_ConvoFac/2202.839436)
+fix stress_6 6 ave/time 1 100 100 v_sigmayy_5 file ./CZM/stresses/stress6.dat
+
+compute stress_7 7 stress/atom NULL
+compute stress_7_y 7 reduce sum c_stress_7[2]
+variable sigmayy_7 equal c_stress_7_y*(v_ConvoFac/1888.148088)
+fix stress_7 7 ave/time 1 100 100 v_sigmayy_7 file ./CZM/stresses/stress7.dat
+
+compute stress_8 8 stress/atom NULL
+compute stress_8_y 8 reduce sum c_stress_8[2]
+variable sigmayy_8 equal c_stress_8_y*(v_ConvoFac/1888.148088)
+fix stress_8 8 ave/time 1 100 100 v_sigmayy_8 file ./CZM/stresses/stress8.dat
+
+compute stress_9 9 stress/atom NULL
+compute stress_9_y 9 reduce sum c_stress_9[2]
+variable sigmayy_9 equal c_stress_9_y*(v_ConvoFac/2071.718041)
+fix stress_9 9 ave/time 1 100 100 v_sigmayy_9 file ./CZM/stresses/stress9.dat
+
+compute stress_10 10 stress/atom NULL
+compute stress_10_y 10 reduce sum c_stress_10[2]
+variable sigmayy_10 equal c_stress_10_y*(v_ConvoFac/2019.269483)
+fix stress_10 10 ave/time 1 100 100 v_sigmayy_10 file ./CZM/stresses/stress10.dat
+
+
+unfix 1 
+undump mydmp
+
+velocity upper set 0.0 0.3 0.0
+velocity mobile ramp vy 0.0 0.3 y 5.98 113.62 sum yes units box
+
+fix 3 all nve
+fix 4 boundary setforce 0.0 0.0 0.0
+
+thermo 100
+thermo_style  custom step time temp pe etotal press vol
+restart 500 loading01.restart loadin02.restart
+compute stress all stress/atom NULL
+dump dump_1 all custom 100 output/co_ti.300K.lammpstrj id type x y z c_stress[2]
+run 150000
+unfix 3
+unfix 4
+undump dump_1

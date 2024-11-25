@@ -1,0 +1,48 @@
+# CZM separation zone atom data extraction
+
+# [Initialization
+package omp 4
+units metal
+atom_style atomic
+dimension 3
+boundary s s p
+
+# [Loading restart file from the NVT-NVE stabilization
+read_restart nvt2.restart
+
+# [Force fields
+pair_style meam
+pair_coeff * * library.meam Co Ti CoTi.meam Co Ti
+
+# Making the cohesive zone cells at +-0.5a from the interface line and dumping the position and id of the atoms
+region 1 block 11.945047010000001 21.01670740866667 50.0825 68.02250000000001 0 11.96
+group 1 region 1
+dump 1 1 custom 1 ./dumps/1.dump id x y z
+region 2 block 21.01670740866667 30.088367807333334 50.0825 68.02250000000001 0 11.96
+group 2 region 2
+dump 2 2 custom 1 ./dumps/2.dump id x y z
+region 3 block 30.088367807333334 39.16002820600001 50.0825 68.02250000000001 0 11.96
+group 3 region 3
+dump 3 3 custom 1 ./dumps/3.dump id x y z
+region 4 block 39.16002820600001 48.23168860466667 50.0825 68.02250000000001 0 11.96
+group 4 region 4
+dump 4 4 custom 1 ./dumps/4.dump id x y z
+region 5 block 48.23168860466667 57.30334900333334 50.0825 68.02250000000001 0 11.96
+group 5 region 5
+dump 5 5 custom 1 ./dumps/5.dump id x y z
+region 6 block 57.30334900333334 66.375009402 50.0825 68.02250000000001 0 11.96
+group 6 region 6
+dump 6 6 custom 1 ./dumps/6.dump id x y z
+region 7 block 66.375009402 75.44666980066667 50.0825 68.02250000000001 0 11.96
+group 7 region 7
+dump 7 7 custom 1 ./dumps/7.dump id x y z
+region 8 block 75.44666980066667 84.51833019933333 50.0825 68.02250000000001 0 11.96
+group 8 region 8
+dump 8 8 custom 1 ./dumps/8.dump id x y z
+region 9 block 84.51833019933333 93.589990598 50.0825 68.02250000000001 0 11.96
+group 9 region 9
+dump 9 9 custom 1 ./dumps/9.dump id x y z
+region 10 block 93.589990598 102.66165099666667 50.0825 68.02250000000001 0 11.96
+group 10 region 10
+dump 10 10 custom 1 ./dumps/10.dump id x y z
+run 0

@@ -1,0 +1,32 @@
+# CZM separation zone atom data extraction
+
+# [Initialization
+package omp 4
+units metal
+atom_style atomic
+dimension 3
+boundary s s p
+
+# [Loading restart file from the NVT-NVE stabilization
+read_data NVE.data
+
+# [Force fields
+pair_style meam
+pair_coeff * * library.meam Co Ti CoTi.meam Co Ti
+
+region 11 block 102.66165099666667 111.73331139533333 50.0825 68.02250000000001 0 11.96
+group 11 region 11
+dump 11 11 custom 1 ./dumps/11.dump id x y z
+region 12 block 111.73331139533333 120.80497179400001 50.0825 68.02250000000001 0 11.96
+group 12 region 12
+dump 12 12 custom 1 ./dumps/12.dump id x y z
+region 13 block 120.80497179400001 129.87663219266668 50.0825 68.02250000000001 0 11.96
+group 13 region 13
+dump 13 13 custom 1 ./dumps/13.dump id x y z
+region 14 block 129.87663219266668 138.94829259133334 50.0825 68.02250000000001 0 11.96
+group 14 region 14
+dump 14 14 custom 1 ./dumps/14.dump id x y z
+region 15 block 138.94829259133334 148.01995299 50.0825 68.02250000000001 0 11.96
+group 15 region 15
+dump 15 15 custom 1 ./dumps/15.dump id x y z
+run 0

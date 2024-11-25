@@ -1,0 +1,19 @@
+64 atoms in group 1  
+144 atoms in group 2j
+168 atoms in group 3f
+144 atoms in group 4j
+144 atoms in group 5j
+168 atoms in group 6f
+144 atoms in group 7j
+144 atoms in group 8j
+158 atoms in group 9f
+154 atoms in group 10f
+144 atoms in group 11
+165 atoms in group 12
+147 atoms in group 13
+144 atoms in group 14
+120 atoms in group 15
+
+total 15820 atoms
+volume 207434.04668044412
+per atom volume 13.11213948675374
